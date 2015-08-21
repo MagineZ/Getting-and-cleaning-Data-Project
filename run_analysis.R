@@ -13,22 +13,10 @@ setwd("./course-project")
 library(httr) 
 url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
 file <- "instancia.zip"
-if(!file.exists(file)){
-	print("descargando")
-	download.file(url, file, method="curl")
-}
+download.file(url, file, method="curl")
 
 #unzip and create folders (if those ain't exist)
-datafolder <- "UCI HAR Dataset"
-resultsfolder <- "results"
-if(!file.exists(datafolder)){
-	print("unzip file")
-	unzip(file, list = FALSE, overwrite = TRUE)
-} 
-if(!file.exists(resultsfolder)){
-	print("create results folder")
-	dir.create(resultsfolder)
-} 
+unzip(file, list = FALSE, overwrite = TRUE)
 
 #read txt and covnert to data.frame
 gettables <- function (filename,cols = NULL){
