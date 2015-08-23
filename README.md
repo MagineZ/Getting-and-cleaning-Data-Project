@@ -1,4 +1,4 @@
-downloads data and unzips
+downloads data and unzips/n
 loads features.txt for the name of features
 loads X_train.txt, y_train.txt, subject_train.txt
 X_train using the name of features as columns
