@@ -7,52 +7,47 @@
 #4) Appropriately labels the data set with descriptive variable names. 
 #5) Creates a second, independent tidy data set with the average of each variable for each activity and each subject. 
 
-setwd("./course-project")
+setwd("C:/Users/Pei-Chun/Documents/R/Course 3/course-project")
 
 #download data
 library(httr) 
 url <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
 file <- "instancia.zip"
-download.file(url, file, method="curl")
+download.file(url, file)
 
-#unzip and create folders (if those ain't exist)
-unzip(file, list = FALSE, overwrite = TRUE)
+#unzip and create folders
+rawdata <- "UCI HAR Dataset"
+results <- "results"
+print("unzip file")
+unzip(file, list = FALSE, overwrite = TRUE) 
+dir.create(results)
 
-#read txt and covnert to data.frame
-gettables <- function (filename,cols = NULL){
-	print(paste("Getting table:", filename))
-	f <- paste(datafolder,filename,sep="/")
-	data <- data.frame()
-	if(is.null(cols)){
-		data <- read.table(f,sep="",stringsAsFactors=F)
-	} else {
-		data <- read.table(f,sep="",stringsAsFactors=F, col.names= cols)
-	}
-	data
-}
 
-#run and check gettables
-features <- gettables("features.txt")
+#getting feature names
+wd<-getwd()
+rawfolder<-paste(wd,rawdata,sep="/")
+print("Getting feature names")
+features <- read.table(paste(rawfolder,"features.txt",sep="/"),stringsAsFactors=F)
 
-#read data and build database
-getdata <- function(type, features){
-	print(paste("Getting data", type))
-	subject_data <- gettables(paste(type,"/","subject_",type,".txt",sep=""),"id")
-	y_data <- gettables(paste(type,"/","y_",type,".txt",sep=""),"activity")
-	x_data <- gettables(paste(type,"/","X_",type,".txt",sep=""),features$V2)
-	return (cbind(subject_data,y_data,x_data))
-}
+#getting train data
+print("Getting train data")
+    subject_train <- read.table(paste(rawfolder,"train/subject_train.txt",sep="/"),stringsAsFactors=F,col.name="id")
+    y_train <- read.table(paste(rawfolder,"train/y_train.txt",sep="/"),stringsAsFactors=F,col.name="Activity")
+    x_train <- read.table(paste(rawfolder,"train/X_train.txt",sep="/"),stringsAsFactors=F,col.name=features$V2)
+    train <- cbind(subject_train,y_train,x_train)
 
-#run and check getdata
-test <- getdata("test", features)
-train <- getdata("train", features)
-
+#getting test data
+print("Getting test data")
+subject_test <- read.table(paste(rawfolder,"test/subject_test.txt",sep="/"),stringsAsFactors=F,col.name="id")
+y_test <- read.table(paste(rawfolder,"test/y_test.txt",sep="/"),stringsAsFactors=F,col.name="Activity")
+x_test <- read.table(paste(rawfolder,"test/X_test.txt",sep="/"),stringsAsFactors=F,col.name=features$V2)
+test <- cbind(subject_test,y_test,x_test)
 
 #save the resulting data in the indicated folder
 saveresults <- function (data,name){
-	print(paste("saving results", name))
-	file <- paste(resultsfolder, "/", name,".csv" ,sep="")
-	write.csv(data,file)
+    print(paste("saving results", name))
+    file <- paste(results, "/", name,".csv" ,sep="")
+    write.csv(data,file)
 }
 
 ### required activities ###
@@ -62,17 +57,17 @@ library(plyr)
 data <- rbind(train, test)
 data <- arrange(data, id)
 
-#2) Extracts only the measurements on the mean and standard deviation for each measurement. 
+#2) Extracts only the measurements on the mean and standard deviation for each measurement.
 mean_and_std <- data[,c(1,2,grep("std", colnames(data)), grep("mean", colnames(data)))]
 saveresults(mean_and_std,"mean_and_std")
 
 #3) Uses descriptive activity names to name the activities in the data set
-activity_labels <- gettables("activity_labels.txt")
+activity_labels <- read.table(paste(rawfolder,"activity_labels.txt",sep="/"),stringsAsFactors=F)
 
 #4) Appropriately labels the data set with descriptive variable names. 
-data$activity <- factor(data$activity, levels=activity_labels$V1, labels=activity_labels$V2)
+data$Activity <- factor(data$Activity, levels=activity_labels$V1, labels=activity_labels$V2)
 
 #5) Creates a second, independent tidy data set with the average of each variable for each activity and each subject. 
-tidy_dataset <- ddply(mean_and_std, .(id, activity), .fun=function(x){ colMeans(x[,-c(1:2)]) })
+tidy_dataset <- ddply(mean_and_std, .(id, Activity), colMeans)
 colnames(tidy_dataset)[-c(1:2)] <- paste(colnames(tidy_dataset)[-c(1:2)], "_mean", sep="")
 saveresults(tidy_dataset,"tidy_dataset")
