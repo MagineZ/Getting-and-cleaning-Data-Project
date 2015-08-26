@@ -63,11 +63,14 @@ saveresults(mean_and_std,"mean_and_std")
 
 #3) Uses descriptive activity names to name the activities in the data set
 activity_labels <- read.table(paste(rawfolder,"activity_labels.txt",sep="/"),stringsAsFactors=F)
-
-#4) Appropriately labels the data set with descriptive variable names. 
 data$Activity <- factor(data$Activity, levels=activity_labels$V1, labels=activity_labels$V2)
 
 #5) Creates a second, independent tidy data set with the average of each variable for each activity and each subject. 
 tidy_dataset <- ddply(mean_and_std, .(id, Activity), colMeans)
 colnames(tidy_dataset)[-c(1:2)] <- paste(colnames(tidy_dataset)[-c(1:2)], "_mean", sep="")
 saveresults(tidy_dataset,"tidy_dataset")
+
+#4) Appropriately labels the data set with descriptive variable names.
+tidy_dataset$Activity <- as.character(tidy_dataset$Activity)
+for (i in 1:6){
+    tidy_dataset$Activity[tidy_dataset$Activity == i] <- as.character(activity_labels[i,2])}
